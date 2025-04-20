@@ -2,11 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { createServer } from 'http';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const DEFAULT_PORT = process.env.PORT || 3002;
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +16,39 @@ app.use(express.json());
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+// Function to check if a port is available
+const isPortAvailable = (port) => {
+  return new Promise((resolve) => {
+    const server = createServer();
+    
+    server.once('error', () => {
+      resolve(false);
+    });
+    
+    server.once('listening', () => {
+      server.close();
+      resolve(true);
+    });
+    
+    server.listen(port);
+  });
+};
+
+// Function to find an available port
+const findAvailablePort = async (startPort) => {
+  let currentPort = startPort;
+  const maxPort = startPort + 100; // Try up to 100 ports ahead
+  
+  while (currentPort <= maxPort) {
+    if (await isPortAvailable(currentPort)) {
+      return currentPort;
+    }
+    currentPort++;
+  }
+  
+  throw new Error('No available ports found');
+};
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -151,6 +185,16 @@ app.get('/', (req, res) => {
   res.send('Recipe Finder API is running');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-}); 
+// Start server with port checking
+const startServer = async () => {
+  try {
+    const port = await findAvailablePort(DEFAULT_PORT);
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+  }
+};
+
+startServer(); 
