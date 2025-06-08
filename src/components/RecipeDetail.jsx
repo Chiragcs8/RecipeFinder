@@ -32,7 +32,7 @@ const RecipeDetail = ({ recipe, onClose }) => {
     const checkIfSaved = async () => {
       if (isSignedIn) {
         try {
-          const response = await axios.get(`http://localhost:3002/api/recipes/saved/${user.id}`);
+          const response = await axios.get(`http://localhost:5000/api/recipes/saved/${user.id}`);
           if (response.data.success) {
             // Extract recipe ID from URI - handle both formats
             const recipeId = recipe.uri.includes('#recipe_') 
@@ -77,7 +77,7 @@ const RecipeDetail = ({ recipe, onClose }) => {
 
       if (isSaved) {
         // Remove recipe from database
-        const response = await axios.delete(`http://localhost:3002/api/recipes/unsave/${user.id}/${recipeId}`);
+        const response = await axios.delete(`http://localhost:5000/api/recipes/unsave/${user.id}/${recipeId}`);
         if (response.data.success) {
           setIsSaved(false);
           setMessage("Recipe unsaved");
@@ -86,7 +86,7 @@ const RecipeDetail = ({ recipe, onClose }) => {
         }
       } else {
         // Add recipe to database
-        const response = await axios.post('http://localhost:3002/api/recipes/save', {
+        const response = await axios.post('http://localhost:5000/api/recipes/save', {
           userId: user.id,
           recipeId: recipeId,
           recipe: recipe

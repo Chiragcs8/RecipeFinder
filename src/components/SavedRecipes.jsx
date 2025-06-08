@@ -16,7 +16,7 @@ const SavedRecipes = () => {
       if (isSignedIn) {
         try {
           setLoading(true);
-          const response = await axios.get(`http://localhost:3002/api/recipes/saved/${user.id}`);
+          const response = await axios.get(`http://localhost:5000/api/recipes/saved/${user.id}`);
           if (response.data.success) {
             setSavedRecipes(response.data.recipes);
           }

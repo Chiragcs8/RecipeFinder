@@ -7,48 +7,18 @@ import { createServer } from 'http';
 dotenv.config();
 
 const app = express();
-const DEFAULT_PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+mongoose
+  .connect(process.env.MONGODB_URI) // Establishes a connection to the MongoDB database using the URI defined in the environment variable.
+  .then(() => console.log("mongoose is connected")) // Logs a success message when the connection is successful.
+  .catch((e) => console.log(e)); // Catches and logs any errors that occur during the connection process.
 
-// Function to check if a port is available
-const isPortAvailable = (port) => {
-  return new Promise((resolve) => {
-    const server = createServer();
-    
-    server.once('error', () => {
-      resolve(false);
-    });
-    
-    server.once('listening', () => {
-      server.close();
-      resolve(true);
-    });
-    
-    server.listen(port);
-  });
-};
 
-// Function to find an available port
-const findAvailablePort = async (startPort) => {
-  let currentPort = startPort;
-  const maxPort = startPort + 100; // Try up to 100 ports ahead
-  
-  while (currentPort <= maxPort) {
-    if (await isPortAvailable(currentPort)) {
-      return currentPort;
-    }
-    currentPort++;
-  }
-  
-  throw new Error('No available ports found');
-};
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -185,16 +155,7 @@ app.get('/', (req, res) => {
   res.send('Recipe Finder API is running');
 });
 
-// Start server with port checking
-const startServer = async () => {
-  try {
-    const port = await findAvailablePort(DEFAULT_PORT);
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-  }
-};
-
-startServer(); 
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  // Logs a message to confirm the server is running.
+}); // Starts the Express server and listens for incoming requests on the specified port.
