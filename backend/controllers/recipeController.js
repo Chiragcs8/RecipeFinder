@@ -12,9 +12,11 @@ const extractRecipeId = (uri) => {
 
 export const saveRecipe = async (req, res) => {
   try {
+    console.log('Save recipe request received:', req.body);
     const { userId, recipeId, recipe } = req.body;
 
     if (!userId || !recipeId || !recipe) {
+      console.log('Missing required fields:', { userId, recipeId, hasRecipe: !!recipe });
       return res.status(400).json({
         success: false,
         message: 'Missing required fields'
@@ -23,11 +25,13 @@ export const saveRecipe = async (req, res) => {
 
     let user = await User.findOne({ userId });
     if (!user) {
+      console.log('Creating new user:', userId);
       user = new User({ userId, recipes: [] });
     }
 
     const isRecipeSaved = user.recipes.some(r => r.recipeId === recipeId);
     if (isRecipeSaved) {
+      console.log('Recipe already saved:', recipeId);
       return res.status(400).json({ 
         success: false, 
         message: 'Recipe is already saved' 
@@ -41,6 +45,7 @@ export const saveRecipe = async (req, res) => {
     };
     user.recipes.push(recipeToSave);
     await user.save();
+    console.log('Recipe saved successfully:', recipeId);
 
     res.json({ success: true });
   } catch (error) {
@@ -54,10 +59,12 @@ export const saveRecipe = async (req, res) => {
 
 export const unsaveRecipe = async (req, res) => {
   try {
+    console.log('Unsave recipe request received:', req.params);
     const { userId, recipeId } = req.params;
 
     const user = await User.findOne({ userId });
     if (!user) {
+      console.log('User not found:', userId);
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -66,6 +73,7 @@ export const unsaveRecipe = async (req, res) => {
 
     user.recipes = user.recipes.filter(r => r.recipeId !== recipeId);
     await user.save();
+    console.log('Recipe unsaved successfully:', recipeId);
 
     res.json({ success: true });
   } catch (error) {
@@ -79,13 +87,16 @@ export const unsaveRecipe = async (req, res) => {
 
 export const getSavedRecipes = async (req, res) => {
   try {
+    console.log('Get saved recipes request received:', req.params);
     const { userId } = req.params;
 
     const user = await User.findOne({ userId });
     if (!user) {
+      console.log('User not found, returning empty recipes array:', userId);
       return res.json({ success: true, recipes: [] });
     }
 
+    console.log('Found saved recipes for user:', userId, 'Count:', user.recipes.length);
     res.json({ success: true, recipes: user.recipes });
   } catch (error) {
     console.error('Error fetching saved recipes:', error);
